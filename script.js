@@ -1,15 +1,94 @@
 // script.js
-
 const img = new Image(); // used to load image from <input> and draw to canvas
 
+const clr = document.querySelector('[type="reset"]');
+const sub = document.querySelector('[type="submit"]');
+const read = document.querySelector('[type="button"]');
+
+const ttop = document.getElementById("text-top");
+const tbot = document.getElementById("text-bottom");
+
+const upl = document.getElementById("image-input");
+
+var c = document.getElementById("user-image");
+
+const ctx = c.getContext('2d');
+
+ctx.font = "50px Arial";
+
+const drop = document.getElementById("voice-selection");
+
+drop.disabled = false;
+drop.innerHTML = "";
+
+var vcs = speechSynthesis.getVoices();
+vcs.sort();
+
+function startup() {
+  
+
+  var vcs = speechSynthesis.getVoices();
+
+  for(let i = 0; i < vcs.length; i++) {
+    
+    var option = document.createElement('option');
+    option.textContent = vcs[i].name + ' (' + vcs[i].lang + ')';
+
+    if(vcs[i].default) {
+      
+      option.textContent += ' - default';
+    }
+
+    option.setAttribute('data-lang', vcs[i].lang);
+    
+    option.setAttribute('data-name', vcs[i].name);
+
+    drop.appendChild(option);
+  }
+
+}
+
+startup();
+
 // Fires whenever the img object loads a new image (such as with img.src =)
-img.addEventListener('load', () => {
-  // TODO
+img.addEventListener('load', function() {
+
+  ctx.clearRect(0, 0, c.width, c.height); 
+
+  ctx.fillStyle = "#000000"; 
+  ctx.fillRect(0, 0, c.width, c.height); 
+
+  clr.disabled = true; 
+  read.disabled = true; 
+  sub.disabled = false; 
+
+  ttop.value = ""; 
+  tbot.value = ""; 
+
+  let dims = getDimensions(c.width, c.height, img.width, img.height);
+  
+  ctx.scale(dims['width'] / img.width, dims['height'] / img.height);
+
+  ctx.drawImage(img, dims["startX"], dims["startY"] * img.height / dims['height'])
+  
+  ctx.scale(img.width / dims['width'], img.height / dims['height']);
 
   // Some helpful tips:
   // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
   // - Clear the form when a new image is selected
   // - If you draw the image to canvas here, it will update as soon as a new image is selected
+});
+
+upl.addEventListener('change', function() {
+
+  let str = upl.value;
+
+  str = str.substr(str.lastIndexOf("\\") + 1);
+
+  img.alt = str;
+
+  img.src = URL.createObjectURL(upl.files[0]);
+
 });
 
 /**
@@ -23,7 +102,7 @@ img.addEventListener('load', () => {
  * and also the starting X and starting Y coordinate to be used when you draw the new image to the
  * Canvas. These coordinates align with the top left of the image.
  */
-function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
+ function getDimensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
   let aspectRatio, height, width, startX, startY;
 
   // Get the aspect ratio, used so the picture always fits inside the canvas
@@ -51,3 +130,64 @@ function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
 
   return { 'width': width, 'height': height, 'startX': startX, 'startY': startY }
 }
+
+clr.addEventListener("click", function() {
+  sub.disabled = false;
+
+  ctx.clearRect(0, 0, c.width, c.height);
+
+});
+
+sub.addEventListener("click", function() {
+
+  event.preventDefault();
+
+  let textTop = ttop.value;
+  let textBottom = tbot.value;
+
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = "center";
+
+  ctx.fillText(textTop, c.width * 0.5, 30);
+  ctx.fillText(textBottom, c.width * 0.5, 370);
+  
+
+  clr.disabled = false;
+  read.disabled = false;
+  sub.disabled = true;
+});
+
+const slider = document.querySelector('[type="range"]');
+
+read.addEventListener("click", function() {
+
+  let voice = vcs[drop.selectedIndex];
+
+  let utrT = new SpeechSynthesisUtterance(ttop.value);
+  utrT.voice = voice;
+  utrT.volume = slider.value / 100;
+  
+  let utrB = new SpeechSynthesisUtterance(tbot.value);
+  utrB.voice = voice;
+  utrB.volume = slider.value / 100;
+
+  console.log(slider.value / 100);
+
+  window.speechSynthesis.speak(utrT);
+  window.speechSynthesis.speak(utrB);
+});
+
+var icon = document.getElementsByTagName("img")[0];
+
+slider.addEventListener("input", function() {
+
+  if (slider.value >= 67) {
+    icon.src = "/icons/volume-level-3.svg";
+  } else if (slider.value >= 34) {
+    icon.src = "/icons/volume-level-2.svg";
+  } else if (slider.value >= 1) {
+    icon.src = "/icons/volume-level-1.svg";
+  } else {
+    icon.src = "/icons/volume-level-0.svg";
+  }
+});
