@@ -9,4 +9,4 @@ https://bnlonc.github.io/Lab5/
 
 ## Part 2:
 
-https://github.com/BNLonc/github-actions-for-ci
+https://github.com/BNLonc/github-actions-for-ci/pull/6#issuecomment-831050920
