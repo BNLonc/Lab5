@@ -182,12 +182,12 @@ var icon = document.getElementsByTagName("img")[0];
 slider.addEventListener("input", function() {
 
   if (slider.value >= 67) {
-    icon.src = "/icons/volume-level-3.svg";
+    icon.src = "icons/volume-level-3.svg";
   } else if (slider.value >= 34) {
-    icon.src = "/icons/volume-level-2.svg";
+    icon.src = "icons/volume-level-2.svg";
   } else if (slider.value >= 1) {
-    icon.src = "/icons/volume-level-1.svg";
+    icon.src = "icons/volume-level-1.svg";
   } else {
-    icon.src = "/icons/volume-level-0.svg";
+    icon.src = "icons/volume-level-0.svg";
   }
 });
